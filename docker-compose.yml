@@ -1,0 +1,35 @@
+version: '3'
+services:
+  db:
+    image: postgres:14.0-alpine
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: ecommerce
+    ports:
+      - 5432:5432
+    volumes:
+      - db:/var/lib/postgresql/data
+      - ./api/src/db/init_simple.sql:/docker-entrypoint-initdb.d/init.sql
+
+  app:
+    restart: on-failure
+    build: ./api
+    ports:
+    # to test the api
+      - 3000:3000
+    depends_on:
+      - db
+
+  nginx:
+    restart: on-failure
+    build: ./nginx
+    ports:
+      - 80:80
+    depends_on:
+      - app
+
+volumes:
+  db:
+    driver: local
